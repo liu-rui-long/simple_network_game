@@ -14,12 +14,12 @@ class Simulation(object):
             agent.payoff = 0
 
         for i,j in self.graph.edges():
-            p_i,p_j=play_game(self.agents[i].strategy,self.agents[j].strategy)
+            p_i,p_j=play_game(self.agents[i].strategy,self.agents[j].strategy,'PD')
             self.agents[i].payoff += p_i
             self.agents[j].payoff += p_j
         for i in self.graph.nodes():
             neighbor=random.choice(list(self.graph.neighbors(i)))
-            fermi_update(self.agents[i],self.agents[j])
+            fermi_update(self.agents[i],self.agents[neighbor])
 
     def cooperation_ratio(self):
 
