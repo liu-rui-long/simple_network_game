@@ -1,13 +1,13 @@
 from src.network import create_network
-from src.simulation import Simulation
+from src.simulation import Simulator
 from src.visualize import plot_cooperation
 
 
 def main():
-    G=['Star','WS']
+    G=['BA','WS','ER']
     for g in G:
         graph=create_network(100,g)
-        sim = Simulation(graph)
+        sim = Simulator(graph,'IB','dynamic')
         # agents=sim.agents
         ratios=[]
         for i in range(10):
