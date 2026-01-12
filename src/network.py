@@ -2,6 +2,7 @@ import networkx as nx
 
 
 def create_network(n=100, network_type='BA'):
+
     if network_type == "ER":   # ER随机图
         return nx.erdos_renyi_graph(n, p=0.05)
     elif network_type == "WS":  # 小世界网络

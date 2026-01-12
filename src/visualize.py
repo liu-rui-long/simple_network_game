@@ -45,3 +45,10 @@ def plot_network_strategy(graph, agents, step=0):
     plt.legend()
     plt.axis('off')
     plt.show()
+
+def plot_delta_q(mean_delta_q):
+    plt.plot(mean_delta_q)
+    plt.xlabel("Time")
+    plt.ylabel("Average ΔQ")
+    plt.title("Q-learning Convergence")
+    plt.show()

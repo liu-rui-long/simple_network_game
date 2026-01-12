@@ -2,19 +2,20 @@ from src.agent import Agent
 from src.game import play_game
 from src.dynamics import fermi_update,imitate_best
 import networkx as nx
+import numpy as np
 import random
 
 
 class Simulator():
 
-    def __init__(self,graph,dynamic_type,network_dynamic,rewire_prob=0.01,homophily=0.7):
+    def __init__(self,graph,dynamic_type,network_dynamic='static',rewire_prob=0.01,homophily=0.7):
         self.graph = graph
-        self.dynamic_type = dynamic_type
-        self.network_dynamic = network_dynamic
+        self.dynamic_type = dynamic_type  # 策略更新方式
+        self.network_dynamic = network_dynamic # 是否动态网络
         self.rewire_prob = rewire_prob
         self.agents ={i:Agent(random.choice([0,1])) for i in graph.nodes()}
         self.homophily=homophily # 同质性因子
-
+        self.avg_delta_q = []  # 记录每一步所有个体平均最大q差的变化
     def update_network1(self):  # 随机重连，以rewire_prob断开
         rewire_edges=[]
         for u,v in self.graph.edges():  # 收集需要重连的边,考虑两个节点的度都是大于1，保证网络连通
@@ -52,19 +53,22 @@ class Simulator():
                 else:
                     self.graph.add_edge(u, v)
 
-
-
-
-
-
-    def step(self):
+    '''  Q-learning 负责价值评估与决策，Fermi 负责随机性、扩散与结构演化
+       两者可在行为、学习和网络三个层次以不同方式耦合
+       目前常见的Q-learning和费米等结合
+       1.Q-learning用于个体的学习，费米用于个体对群体的学习，最后决定是用自己的学习还是群体的学习
+       2.Q-learning用于评估行为得到Q值，Q值被用于费米决定是否模仿
+       3.Q-learning用于行为决策，费米用于更新网络
+       4.Q-learning决定学什么，费米决定学不学
+       '''
+    def step1(self):
         for agent in self.agents.values():
             agent.payoff = 0.0
         for i,j in self.graph.edges():  #计算收益
             p_i,p_j=play_game(self.agents[i].strategy,self.agents[j].strategy,'SH')
             self.agents[i].payoff += p_i
             self.agents[j].payoff += p_j
-        for i in self.graph.nodes():  #策略更新
+        for i in self.graph.nodes():  # 策略更新
             neighbors = [self.agents[x] for x in self.graph.neighbors(i)]
             if self.dynamic_type=='FM':
                 neighbor = random.choice(list(self.graph.neighbors(i)))
@@ -74,6 +78,31 @@ class Simulator():
         if self.network_dynamic=='dynamic':
             self.update_network2()
 
+    def step2(self):
 
-    def cooperation_ratio(self):
+        for agent in self.agents.values():  # 选动作，清空收益
+            action = agent.choose_action()
+            agent.strategy = action
+            agent.payoff = 0.0
+
+        for i, j in self.graph.edges():  # 计算收益
+            p_i, p_j = play_game(self.agents[i].strategy,
+                                 self.agents[j].strategy,
+                                 'SH')
+            self.agents[i].payoff += p_i
+            self.agents[j].payoff += p_j
+
+        for agent in self.agents.values():  # 更新Q表
+            agent.update_q()
+
+        mean_delta_q = np.mean([agent.last_delta_Q for agent in self.agents.values()])
+        self.avg_delta_q.append(mean_delta_q) # 记录所以个体的平均q差
+        # if self.network_dynamic=='dynamic':
+        #     self.update_network2()
+
+    def cooperation_ratio(self):  # 合作者占的比例,还可以加平均度、聚类系数等
         return sum(a.strategy for a in self.agents.values())/len(self.agents)
+
+    def delta_q(self):
+        return self.avg_delta_q
+
