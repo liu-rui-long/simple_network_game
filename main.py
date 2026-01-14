@@ -1,6 +1,12 @@
 from src.network import create_network
 from src.simulation import Simulator
 from src.visualize import plot_cooperation,plot_delta_q
+import numpy as np
+import random
+
+SEED = 42
+np.random.seed(SEED)
+random.seed(SEED)
 
 
 def main():

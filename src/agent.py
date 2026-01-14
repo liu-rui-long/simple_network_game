@@ -4,7 +4,7 @@ import random
 
 
 class Agent():
-    def __init__(self,strategy,alpha=0.1,gamma=0.9,epsilon=0.1):
+    def __init__(self,strategy,alpha=0.1,gamma=0.9):
         self.strategy = strategy
         self.payoff=0.0
 
@@ -14,14 +14,14 @@ class Agent():
         self.epsilon_min = 0.05  # 最小的探索率
         self.epsilon_decay = 0.995  # 探索衰减率
 
-        self.q_table = np.zeros((2,2))  # 初始化Q表 2状态(0背叛/1合作)两动作
+        self.q_table = np.zeros((4,2))  # 初始化Q表 2状态(0背叛/1合作)两动作
         # 记录当前状态和动作，用于Q更新
         self.prev_state=None
         self.prev_action=None
         self.last_delta_Q = 0.0  # 记录q值的变化
 
-    def choose_action(self):
-        state = self.strategy
+    def choose_action(self,state):
+
         if random.random()<self.epsilon:
             action=random.choice([0,1])
         else:
@@ -34,11 +34,10 @@ class Agent():
                            self.epsilon * self.epsilon_decay)
         return action
 
-    def update_q(self):
+    def update_q(self,next_state):
 
         prev_Q = self.q_table.copy()  # 复制一份q表，用于计算
         reward = self.payoff
-        next_state = self.strategy
         next_Q = np.max(self.q_table[next_state])
 
         td_target = reward + self.gamma * next_Q

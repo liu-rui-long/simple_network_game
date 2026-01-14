@@ -16,6 +16,17 @@ class Simulator():
         self.agents ={i:Agent(random.choice([0,1])) for i in graph.nodes()}
         self.homophily=homophily # 同质性因子
         self.avg_delta_q = []  # 记录每一步所有个体平均最大q差的变化
+
+    def neighbor_coor_ratio(self,agent_id):
+        neighbors=list(self.graph.neighbors(agent_id))
+        if len(neighbors)==0:
+            return 0
+        coor_ratio=sum([self.agents[i].strategy for i in neighbors])
+        if coor_ratio/len(neighbors) > 0.5:
+            return 1
+        else:
+            return 0
+
     def update_network1(self):  # 随机重连，以rewire_prob断开
         rewire_edges=[]
         for u,v in self.graph.edges():  # 收集需要重连的边,考虑两个节点的度都是大于1，保证网络连通
@@ -80,8 +91,9 @@ class Simulator():
 
     def step2(self):
 
-        for agent in self.agents.values():  # 选动作，清空收益
-            action = agent.choose_action()
+        for i,agent in self.agents.items():  # 选动作，清空收益
+            state=agent.strategy*2+self.neighbor_coor_ratio(i)
+            action = agent.choose_action(state)
             agent.strategy = action
             agent.payoff = 0.0
 
@@ -92,13 +104,13 @@ class Simulator():
             self.agents[i].payoff += p_i
             self.agents[j].payoff += p_j
 
-        for agent in self.agents.values():  # 更新Q表
-            agent.update_q()
+        for i, agent in self.agents.items():  # 更新Q表
+            ratio = self.neighbor_coor_ratio(i)
+            next_state = agent.strategy * 2 + ratio
+            agent.update_q(next_state)
 
         mean_delta_q = np.mean([agent.last_delta_Q for agent in self.agents.values()])
         self.avg_delta_q.append(mean_delta_q) # 记录所以个体的平均q差
-        # if self.network_dynamic=='dynamic':
-        #     self.update_network2()
 
     def cooperation_ratio(self):  # 合作者占的比例,还可以加平均度、聚类系数等
         return sum(a.strategy for a in self.agents.values())/len(self.agents)

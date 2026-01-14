@@ -1,14 +1,15 @@
 import networkx as nx
 
+SEED=42
 
 def create_network(n=100, network_type='BA'):
 
     if network_type == "ER":   # ER随机图
-        return nx.erdos_renyi_graph(n, p=0.05)
+        return nx.erdos_renyi_graph(n, p=0.05,seed=SEED)
     elif network_type == "WS":  # 小世界网络
-        return nx.watts_strogatz_graph(n, k=4, p=0.1)
+        return nx.watts_strogatz_graph(n, k=4, p=0.1,seed=SEED)
     elif network_type == "BA":  # 无标度网络
-        return nx.barabasi_albert_graph(n, m=3)
+        return nx.barabasi_albert_graph(n, m=3,seed=SEED)
     elif network_type == "Complete":  # 完全连接网络
         return nx.complete_graph(n)
     elif network_type == "Star":  # 星型网络
