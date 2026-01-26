@@ -17,12 +17,12 @@ class Simulator():
         self.homophily=homophily # 同质性因子
         self.avg_delta_q = []  # 记录每一步所有个体平均最大q差的变化
 
-    def neighbor_coor_ratio(self,agent_id):
+    def neighbor_coop_ratio(self,agent_id):
         neighbors=list(self.graph.neighbors(agent_id))
-        if len(neighbors)==0:
+        if len(neighbors) == 0:
             return 0
-        coor_ratio=sum([self.agents[i].strategy for i in neighbors])
-        if coor_ratio/len(neighbors) > 0.5:
+        coop_ratio=sum(self.agents[i].strategy for i in neighbors)
+        if coop_ratio/len(neighbors) > 0.5:
             return 1
         else:
             return 0
@@ -92,10 +92,11 @@ class Simulator():
     def step2(self):
 
         for i,agent in self.agents.items():  # 选动作，清空收益
-            state=agent.strategy*2+self.neighbor_coor_ratio(i)
+            pre_ratio = self.neighbor_coop_ratio(i)
+            state = agent.strategy * 2 + pre_ratio
             action = agent.choose_action(state)
             agent.strategy = action
-            agent.payoff = 0.0
+            agent.payoff = 0
 
         for i, j in self.graph.edges():  # 计算收益
             p_i, p_j = play_game(self.agents[i].strategy,
@@ -105,7 +106,7 @@ class Simulator():
             self.agents[j].payoff += p_j
 
         for i, agent in self.agents.items():  # 更新Q表
-            ratio = self.neighbor_coor_ratio(i)
+            ratio = self.neighbor_coop_ratio(i)
             next_state = agent.strategy * 2 + ratio
             agent.update_q(next_state)
 
