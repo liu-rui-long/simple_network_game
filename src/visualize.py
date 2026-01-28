@@ -2,12 +2,12 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 
-def plot_cooperation(ratios,graph,gname):
+def plot_cooperation(ratios, graph, gname):
 
-    fig, axes = plt.subplots(1,2,figsize=(12,5))
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
     axes[0].set_title('network')
-    nx.draw(graph, ax=axes[0],with_labels=True)
+    nx.draw(graph, ax=axes[0], with_labels=True)
 
     axes[1].set_title(f'Cooperation------{gname}')
     axes[1].set_xlabel('Time Step')
@@ -23,7 +23,7 @@ def plot_network_strategy(graph, agents, step=0):
     可视化网络结构，节点颜色表示策略
     """
     plt.figure(figsize=(10, 8))
-    pos = nx.spring_layout(graph, seed=66)#使用spring_layout算法来计算每个节点在图形中的位置。seed种子保持布局一致
+    pos = nx.spring_layout(graph, seed=66)  # 使用spring_layout算法来计算每个节点在图形中的位置。seed种子保持布局一致
 
 
     # 按策略分类节点

@@ -11,13 +11,13 @@ random.seed(SEED)
 
 def main():
     # G=['BA','WS','ER']
-    G=['Grid_1']
+    G = ['Grid_1']
     for g in G:
-        graph=create_network(100, g)
+        graph = create_network(100, g)
         sim = Simulator(graph, 'IB', 'dynamic')
         # agents=sim.agents
         ratios = []
-        for i in range(1500):
+        for i in range(2000):
             sim.step2()
             ratios.append(sim.cooperation_ratio())
         plot_cooperation(ratios, graph, g)
